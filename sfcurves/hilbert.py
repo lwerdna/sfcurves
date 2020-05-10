@@ -7,7 +7,15 @@ import math
 # https://en.wikipedia.org/wiki/Hilbert_curve
 #------------------------------------------------------------------------------
 
+# (rx,ry) = (?,?)
+# +-----+-----+
+# |(0,1)|(1,1)| y==1, no transformc
+# +-----+-----+
+# |(0,0)|(1,0)|
+# +-----+-----+
+#
 def rotate_wikipedia(n, x, y, rx, ry):
+	print('looking up region (%d,%d)' % (rx, ry))
 	if ry == 0:
 		if rx == 1:
 			x = n-1 - x;
@@ -20,15 +28,18 @@ def rotate_wikipedia(n, x, y, rx, ry):
 def map_wikipedia(n, d):
 	(x,y,t) = (0,0,d)
 
-	level = 1
-	while level<n:
+	width = 1
+	while width<n:
 		rx = 1 & (t//2)
 		ry = 1 & (t ^ rx)
-		(x, y) = rotate_wikipedia(level, x, y, rx, ry)
-		x += level * rx
-		y += level * ry
+		(x, y) = rotate_wikipedia(width, x, y, rx, ry)
+		x += width * rx
+		y += width * ry
+		#print('at width %d (x,y)=(%d,%d)' % (width, x, y))
+
+		# next
 		t //= 4
-		level *= 2
+		width *= 2
 
 	return (x,y)
 
@@ -111,6 +122,18 @@ def map_algo1(length, d, x=0, y=0, kind='H'):
 
 	# recur
 	return map_algo1(length//4, d-quadrant*quarter, x, y, kind)
+
+def unmap_algo1(length, x, y):
+	# determine curve order by growing a square at origin
+	order = 1
+	limit = 2
+	while True:
+		if x<limit or y<limit:
+			break
+		order += 1
+		limit *= 2
+
+	# 
 
 #------------------------------------------------------------------------------
 # API
