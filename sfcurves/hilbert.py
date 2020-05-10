@@ -4,6 +4,8 @@ import math
 
 from enum import Enum, auto, unique
 
+from sfcurves.outline import wall_follower
+
 @unique
 class Algorithm(Enum):
 	WIKIPEDIA = 1
@@ -184,3 +186,15 @@ def reverse(x, y, length, algo=Algorithm.WIKIPEDIA):
 
 	raise Exception('unsupported algorithm: '+str(algo))
 
+# return a polygon enclosing the regions traced by [d0,d1]
+def outline(d0, d1, length, algo=Algorithm.WIKIPEDIA):
+	# TODO: get the appropriate algorithm in there, maybe use functools.partial
+
+	walk = wall_follower(length, d0, d1, forward, reverse)
+
+	#if len(walk) == 1:
+	#	return walk*4
+	#elif len(walk) == 2:
+	#	return [walk[0], walk[1], walk[1], walk[0]]
+	return walk
+	

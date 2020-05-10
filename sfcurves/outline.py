@@ -1,20 +1,21 @@
-def wall_follower(n, d0, d1, mapping, imapping):
+# includes endpoints! [d0,d1]
+def wall_follower(length, d0, d1, mapping, imapping):
 	def ok(x, y):
 		if x<0 or y<0: return False
-		d = imapping(n**2, x, y)
+		d = imapping(x, y, length)
 		#print('is %d within %d,%d' % (d, d0, d1))
-		return d>=0 and d>=d0 and d<d1
+		return d>=0 and d>=d0 and d<=d1
 
-	# move left until stop
-	(x,y) = mapping(n**2, d0)
+	# move left until stop (so we can face down with right hand on wall)
+	(x,y) = mapping(d0, length)
 	while 1:
 		if x == 0: break
 		if not ok(x-1,y): break
 		x = x-1
 
-	start = (x,y)
-	trace = [start]
 	direction = 'down'
+	start = (x, y, direction)
+	trace = [(x,y)]
 
 	tendencies = ['right', 'down', 'left', 'up']
 
@@ -43,14 +44,15 @@ def wall_follower(n, d0, d1, mapping, imapping):
 				(x,y) = (x_try, y_try)
 				moved = True
 			else:
-				# case C: we can't continue! ah!
+				# case C: we can't continue! turn
 				direction = tendencies[(tendencies.index(direction)-1)%4]
 
+		if (x, y, direction) == start:
+			break
+
+		# don't apply duplicates
 		if moved:
 			trace.append((x,y))
-			
-			if (x,y) == start:
-				break
 
 	return trace
 
