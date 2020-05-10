@@ -2,20 +2,30 @@
 
 import math
 
+from enum import Enum, auto, unique
+
+@unique
+class Algorithm(Enum):
+	WIKIPEDIA = 1
+	RECURSIVE0 = 2
+	RECURSIVE1 = 3
+
 #------------------------------------------------------------------------------
 # standard hilbert map and inverse map functions from:
 # https://en.wikipedia.org/wiki/Hilbert_curve
+#
+# tweaked to always return a curve entering at SW exiting at SE
 #------------------------------------------------------------------------------
 
 # (rx,ry) = (?,?)
 # +-----+-----+
-# |(0,1)|(1,1)| y==1, no transformc
+# |(0,1)|(1,1)| y==1, no transform
 # +-----+-----+
 # |(0,0)|(1,0)|
 # +-----+-----+
 #
 def rotate_wikipedia(n, x, y, rx, ry):
-	print('looking up region (%d,%d)' % (rx, ry))
+	#print('looking up region (%d,%d)' % (rx, ry))
 	if ry == 0:
 		if rx == 1:
 			x = n-1 - x;
@@ -25,13 +35,21 @@ def rotate_wikipedia(n, x, y, rx, ry):
 
 	return (x,y)
 
+def normalize_wikipedia(n, point):
+	order = (n.bit_length()-1)>>1
+	if order & 1:
+		return (point[1], point[0])
+	return point
+
 def map_wikipedia(n, d):
 	(x,y,t) = (0,0,d)
 
 	width = 1
+
 	while width<n:
 		rx = 1 & (t//2)
 		ry = 1 & (t ^ rx)
+
 		(x, y) = rotate_wikipedia(width, x, y, rx, ry)
 		x += width * rx
 		y += width * ry
@@ -41,9 +59,12 @@ def map_wikipedia(n, d):
 		t //= 4
 		width *= 2
 
-	return (x,y)
+	# normalize
+	return normalize_wikipedia(n, (x,y))
 
 def unmap_wikipedia(n, x, y):
+	(x,y) = normalize_wikipedia(n, (x,y))
+
 	(rx,ry,s,d)=(0,0,0,0)
 
 	s = n//2
@@ -117,7 +138,7 @@ def map_algo1(length, d, x=0, y=0, kind='H'):
 	y_lookup = {'A':[0,0,1,1], 'B':[1,1,0,0], 'C':[1,0,0,1], 'H':[0,1,1,0]}
 	x += x_lookup[kind][quadrant] * delta
 	y += y_lookup[kind][quadrant] * delta
-	
+
 	kind = {'A':'HAAC', 'B':'CBBH', 'C':'BCCA', 'H':'AHHB'}[kind][quadrant]
 
 	# recur
@@ -133,18 +154,27 @@ def unmap_algo1(length, x, y):
 		order += 1
 		limit *= 2
 
-	# 
+	# TODO
 
 #------------------------------------------------------------------------------
 # API
 #------------------------------------------------------------------------------
 
 # [0,length) -> (x,y)
-def forward(d, length):
-	#return map_algo1(length, d)
-	return map_wikipedia(length, d)
+def forward(d, length, algo=Algorithm.WIKIPEDIA):
+	if algo == Algorithm.WIKIPEDIA:
+		return map_wikipedia(length, d)
+	elif algo == Algorithm.RECURSIVE0:
+		return map_algo0(length, d)
+	elif algo == Algorithm.RECURSIVE1:
+		return map_algo1(length, d)
+	else:
+		raise Exception('unsupported algorithm: '+str(algo))
 
 # (x,y) -> [0,length)
-def reverse(x, y, length):
-	return unmap_wikipedia(length, x, y)
+def reverse(x, y, length, algo=Algorithm.WIKIPEDIA):
+	if algo == Algorithm.WIKIPEDIA:
+		return unmap_wikipedia(length, x, y)
+
+	raise Exception('unsupported algorithm: '+str(algo))
 

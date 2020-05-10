@@ -2,6 +2,7 @@
 
 import sys
 import random
+import functools
 
 from sfcurves.hilbert import forward, reverse
 
@@ -11,44 +12,37 @@ def assert_equals(actual, expected):
 		print('expected:', expected)
 		assert False
 
-print(forward(0,1))
-print('--')
-print(forward(0,4))
-print(forward(1,4))
-print(forward(2,4))
-print(forward(3,4))
-print('--')
-for d in range(16):
-	print(forward(d,16))
-print('--')
-assert_equals(forward(0,4), (0,0))
-assert_equals(forward(1,4), (0,1))
-assert_equals(forward(2,4), (1,1))
-assert_equals(forward(3,4), (1,0))
+if __name__ == '__main__':
+	assert_equals(forward(0,1), (0,0))
 
-print('PASS')
+	assert_equals(forward(0,4), (0,0))
+	assert_equals(forward(1,4), (0,1))
+	assert_equals(forward(2,4), (1,1))
+	assert_equals(forward(3,4), (1,0))
 
-if sys.argv[1:] and sys.argv[1]=='image':
-	from PIL import Image, ImageDraw
+	assert_equals(forward(0,16), (0,0))
+	assert_equals(forward(1,16), (1,0))
+	assert_equals(forward(2,16), (1,1))
+	assert_equals(forward(3,16), (0,1))
+	assert_equals(forward(4,16), (0,2))
+	assert_equals(forward(5,16), (0,3))
+	assert_equals(forward(6,16), (1,3))
+	assert_equals(forward(7,16), (1,2))
+	assert_equals(forward(8,16), (2,2))
+	assert_equals(forward(9,16), (2,3))
+	assert_equals(forward(10,16), (3,3))
+	assert_equals(forward(11,16), (3,2))
+	assert_equals(forward(12,16), (3,1))
+	assert_equals(forward(13,16), (2,1))
+	assert_equals(forward(14,16), (2,0))
+	assert_equals(forward(15,16), (3,0))
 
-	width = 4
-	length = width*width
+	print('mapping/unmapping random points')
+	for i in range(10000):
+		length = 4**random.randint(0,10)
+		d = random.randint(0, length-1)
+		(x,y) = forward(d, length)
+		d_check = reverse(x, y, length)
+		assert_equals(d, d_check)
 
-	width_img = 3*width
-	img = Image.new('RGB', (width_img, width_img))
-	draw = ImageDraw.Draw(img)
-
-	pts = [forward(x, length) for x in range(length)]
-	pts = [(3*p[0]+1, 3*p[1]+1) for p in pts]
-	pts = [(p[0], width_img-1-p[1]) for p in pts]
-	lines = zip(pts[:-1], pts[1:])
-	for line in lines:
-		((x1,y1),(x2,y2)) = line
-		#print('drawing line (%d,%d) -> (%d,%d)' % (x1,y1,x2,y2))
-		draw.line((x1,y1,x2,y2), width=1, fill='#FF0000')
-
-	del draw
-	fpath = '/tmp/tmp.png'
-	print('saving %s' % fpath)
-	img.save(fpath)
-	
+	print('PASS')
