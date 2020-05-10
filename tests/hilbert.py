@@ -2,9 +2,8 @@
 
 import sys
 import random
-import functools
 
-from sfcurves.hilbert import forward, reverse
+from sfcurves.hilbert import forward, reverse, Algorithm
 
 def assert_equals(actual, expected):
 	if actual != expected:
@@ -44,5 +43,17 @@ if __name__ == '__main__':
 		(x,y) = forward(d, length)
 		d_check = reverse(x, y, length)
 		assert_equals(d, d_check)
+
+	print('comparing algorithms')
+	for i in range(10000):
+		length = 4**random.randint(0,10)
+		d = random.randint(0, length-1)
+
+		p0 = forward(d, length, Algorithm.WIKIPEDIA)
+		p1 = forward(d, length, Algorithm.RECURSIVE0)
+		p2 = forward(d, length, Algorithm.RECURSIVE1)
+
+		assert_equals(p0, p1)
+		assert_equals(p1, p2)
 
 	print('PASS')
