@@ -84,7 +84,11 @@ def unmap_wikipedia(n, x, y):
 # compute 2d Hilbert curve coordinate from 1d line coordinate
 # regions = A B   numerically ordered by entering and leaving line,
 #           C D   eg: [A,C,D,B] means enter at A, exit at B, like "U"
-def map_algo0(length, d, x=0, y=0, regions=list('CABD')):
+#
+#           1 2
+#           3 4
+#
+def map_algo0(length, d, x=0, y=0, regions=[3,1,2,4]):
 	#print('d2xy(length=%d, d=%d, (x,y)=(%d,%d), regions=%s' % (length, d, x, y, regions))
 
 	if length == 1:
@@ -101,19 +105,21 @@ def map_algo0(length, d, x=0, y=0, regions=list('CABD')):
 	# compute new x,y base
 	region = regions[region_idx]
 	delta = math.sqrt(length)//2
-	if region == 'A':
+	if region == 1:
 		y += delta
-	elif region == 'D':
+	elif region == 4:
 		x += delta
-	elif region == 'B':
+	elif region == 2:
 		x += delta
 		y += delta
 
 	# compute new region
 	if region_idx == 0:
-		regions = [regions[i] for i in [0,3,2,1]]
+		#regions = [regions[i] for i in [0,3,2,1]]
+		regions = [regions[0], regions[3], regions[2], regions[1]]
 	elif region_idx == 3:
-		regions = [regions[i] for i in [2,1,0,3]]
+		#regions = [regions[i] for i in [2,1,0,3]]
+		regions = [regions[2], regions[1], regions[0], regions[3]]
 
 	# recur
 	return map_algo0(quarter, d-region_idx*quarter, x, y, regions)
