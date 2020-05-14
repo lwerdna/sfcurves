@@ -3,7 +3,7 @@
 import sys
 import random
 
-from sfcurves.hilbert import forward, reverse, Algorithm
+from sfcurves.hilbert import forward, reverse, generator, Algorithm
 
 def assert_equals(actual, expected):
 	if actual != expected:
@@ -62,6 +62,14 @@ if __name__ == '__main__':
 	assert_equals(reverse(2,0,16), 14)
 	assert_equals(reverse(3,0,16), 15)
 
+	print('testing generator')
+	for i in range(10):
+		length = 4**random.randint(0,7)
+		gen = generator(length)
+		for d in range(length):
+			a = next(gen)
+			b = forward(d, length)
+			assert_equals(a, b)
 
 	print('mapping/unmapping random points')
 	for i in range(10000):

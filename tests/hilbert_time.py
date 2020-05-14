@@ -6,7 +6,7 @@ import sys
 import random
 
 import math
-from sfcurves.hilbert import forward, reverse, Algorithm
+from sfcurves.hilbert import forward, reverse, generator, Algorithm
 
 length = 4**8
 width = int(math.sqrt(length))
@@ -44,12 +44,35 @@ def unmap_recursive1():
 	for point in points:
 		result = reverse(point[0], point[1], length, Algorithm.RECURSIVE1)
 
+full_range_length = 4**6
+
+def full_range_wikipedia():
+	global full_range_length
+	for d in range(full_range_length):
+		result = forward(d, length, Algorithm.WIKIPEDIA)
+
+def full_range_recursive0():
+	global full_range_length
+	for d in range(full_range_length):
+		result = forward(d, length, Algorithm.RECURSIVE0)
+
+def full_range_generator():
+	global full_range_length
+	g = generator(full_range_length)
+	for d in range(full_range_length):
+		result = next(g)
+
 trials = 50
-print("trials=%d avg_time=%f seconds" % (trials, timeit(wikipedia, number=trials) / trials))
-print("trials=%d avg_time=%f seconds" % (trials, timeit(recursive0, number=trials) / trials))
-print("trials=%d avg_time=%f seconds" % (trials, timeit(recursive1, number=trials) / trials))
+print("full range WIKIPEDIA  trials=%d avg_time=%f seconds" % (trials, timeit(full_range_wikipedia, number=trials) / trials))
+print("full range RECURSIVE0 trials=%d avg_time=%f seconds" % (trials, timeit(full_range_recursive0, number=trials) / trials))
+print("full range GENERATOR  trials=%d avg_time=%f seconds" % (trials, timeit(full_range_generator, number=trials) / trials))
 print('--')
-print("trials=%d avg_time=%f seconds" % (trials, timeit(unmap_wikipedia, number=trials) / trials))
-print("trials=%d avg_time=%f seconds" % (trials, timeit(unmap_recursive0, number=trials) / trials))
+print("forward WIKIPEDIA  trials=%d avg_time=%f seconds" % (trials, timeit(wikipedia, number=trials) / trials))
+print("forward RECURSIVE0 trials=%d avg_time=%f seconds" % (trials, timeit(recursive0, number=trials) / trials))
+print("forward RECURSIVE1 trials=%d avg_time=%f seconds" % (trials, timeit(recursive1, number=trials) / trials))
+print('--')
+print("reverse WIKIPEDIA  trials=%d avg_time=%f seconds" % (trials, timeit(unmap_wikipedia, number=trials) / trials))
+print("reverse RECURSIVE0 trials=%d avg_time=%f seconds" % (trials, timeit(unmap_recursive0, number=trials) / trials))
 #print("trials=%d avg_time=%f seconds" % (trials, timeit(unmap_recursive1, number=trials) / trials))
+
 

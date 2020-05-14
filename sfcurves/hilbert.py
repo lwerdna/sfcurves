@@ -202,6 +202,45 @@ def unmap_algo1(length, x, y):
 # API
 #------------------------------------------------------------------------------
 
+def generator(length):
+	# assume length is a power of 4
+	if length==1:
+		yield (0,0)
+		return
+
+	levels = (length.bit_length()-1)>>1
+
+	heading = 'N'
+	(x,y) = (0,-1)
+	stack = [('A',levels), ('F',0)]
+
+	while stack:
+		#print(stack)
+		(code, level) = stack.pop()
+
+		# forward, left, right
+		if code=='F':
+			x += {'N':0, 'E':1, 'S':0, 'W':-1}[heading]
+			y += {'N':1, 'E':0, 'S':-1, 'W':0}[heading]
+			#print('yielding ',(x,y))
+			yield (x,y)
+		elif code=='L':
+			heading = {'N':'W','E':'N','S':'E','W':'S'}[heading]
+		elif code=='R':
+			heading = {'N':'E','E':'S','S':'W','W':'N'}[heading]
+
+		# recur, see codes at
+		# https://en.wikipedia.org/wiki/Hilbert_curve#/media/File:Hilbert_curve_production_rules!.svg
+		else:
+			if level == 1:
+				lookup = {'A':'FRFRF', 'B':'FLFLF', 'C':'FRFRF', 'D':'FLFLF'}
+			else:
+				# note the reverse natural order, since consumed right-to-left from stack
+				lookup = {'A':'RBRFALFLAFRDR', 'B':'LALFBRFRBFLCL', 'C':'RDRFCLFLCFRBR', 'D':'LCLFDRFRDFLAL'}
+
+			expansion = lookup[code]
+			stack.extend(zip(expansion, [level-1]*len(expansion)))
+
 # [0,length) -> (x,y)
 def forward(d, length, algo=Algorithm.RECURSIVE0):
 	if algo == Algorithm.WIKIPEDIA:
