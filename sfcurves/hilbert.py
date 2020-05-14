@@ -65,6 +65,7 @@ def map_wikipedia(n, d):
 	return normalize_wikipedia(n, (x,y))
 
 def unmap_wikipedia(n, x, y):
+	#print('unmap_wikipedia(',n,',',x,',',y,')')
 	(x,y) = normalize_wikipedia(n, (x,y))
 
 	(rx,ry,s,d)=(0,0,0,0)
@@ -91,7 +92,7 @@ def unmap_wikipedia(n, x, y):
 #           3 4
 #
 def map_algo0(length, d, x=0, y=0, regions=[3,1,2,4]):
-	#print('d2xy(length=%d, d=%d, (x,y)=(%d,%d), regions=%s' % (length, d, x, y, regions))
+	#print('map_algo0(length=',length,', d=',d,' (x,y)=',x,',',y,',',regions)
 
 	if length == 1:
 		return (x,y)
@@ -106,7 +107,7 @@ def map_algo0(length, d, x=0, y=0, regions=[3,1,2,4]):
 
 	# compute new x,y base
 	region = regions[region_idx]
-	delta = math.sqrt(length)//2
+	delta = int(math.sqrt(length))//2
 	if region == 1:
 		y += delta
 	elif region == 4:
@@ -126,6 +127,39 @@ def map_algo0(length, d, x=0, y=0, regions=[3,1,2,4]):
 	# recur
 	return map_algo0(quarter, d-region_idx*quarter, x, y, regions)
 
+def unmap_algo0(length, x, y, d=0, regions=[3,1,2,4]):
+	#print('unmap_algo0(length=%d (x,y)=(%d,%d) d=%d regions=%s' % (length, x, y, d, regions))
+
+	if length == 1:
+		return d
+
+	delta = int(math.sqrt(length))//2
+	if x>=delta:
+		if y>=delta:
+			region = 2
+			y -= delta
+		else:
+			region = 4
+		x -= delta
+	else:
+		if y>=delta:
+			region = 1
+			y -= delta
+		else:
+			region = 3
+
+	quarter = length//4
+	region_idx = regions.index(region)
+	d += region_idx*quarter
+
+	# compute new region
+	if region_idx == 0:
+		regions = [regions[0], regions[3], regions[2], regions[1]]
+	elif region_idx == 3:
+		regions = [regions[2], regions[1], regions[0], regions[3]]
+
+	return unmap_algo0(quarter, x, y, d, regions)
+
 #------------------------------------------------------------------------------
 # alternative algorithm
 #------------------------------------------------------------------------------
@@ -141,7 +175,7 @@ def map_algo1(length, d, x=0, y=0, kind='H'):
 	quadrant = next(i for i,mark in enumerate(marks) if d<mark)
 
 	# compute new x,y base (coordinate of bottom left corner of subsquare)
-	delta = math.sqrt(length)//2
+	delta = int(math.sqrt(length))//2
 	x_lookup = {'A':[0,1,1,0], 'B':[1,0,0,1], 'C':[1,1,0,0], 'H':[0,0,1,1]}
 	y_lookup = {'A':[0,0,1,1], 'B':[1,1,0,0], 'C':[1,0,0,1], 'H':[0,1,1,0]}
 	x += x_lookup[kind][quadrant] * delta
@@ -169,32 +203,35 @@ def unmap_algo1(length, x, y):
 #------------------------------------------------------------------------------
 
 # [0,length) -> (x,y)
-def forward(d, length, algo=Algorithm.WIKIPEDIA):
+def forward(d, length, algo=Algorithm.RECURSIVE0):
 	if algo == Algorithm.WIKIPEDIA:
-		return map_wikipedia(length, d)
+		result = map_wikipedia(length, d)
 	elif algo == Algorithm.RECURSIVE0:
-		return map_algo0(length, d)
+		result = map_algo0(length, d)
 	elif algo == Algorithm.RECURSIVE1:
-		return map_algo1(length, d)
+		result = map_algo1(length, d)
 	else:
 		raise Exception('unsupported algorithm: '+str(algo))
 
-# (x,y) -> [0,length)
-def reverse(x, y, length, algo=Algorithm.WIKIPEDIA):
-	if algo == Algorithm.WIKIPEDIA:
-		return unmap_wikipedia(length, x, y)
+	return result
 
-	raise Exception('unsupported algorithm: '+str(algo))
+# (x,y) -> [0,length)
+def reverse(x, y, length, algo=Algorithm.RECURSIVE0):
+	#print('reverse(',x,',',y,',',length,')')
+	if algo == Algorithm.WIKIPEDIA:
+		result = unmap_wikipedia(length, x, y)
+	elif algo == Algorithm.RECURSIVE0:
+		result = unmap_algo0(length, x, y)
+	else:
+		raise Exception('unsupported algorithm: '+str(algo))
+
+	return result
 
 # return a polygon enclosing the regions traced by [d0,d1]
 def outline(d0, d1, length, algo=Algorithm.WIKIPEDIA):
+	#print('outline(',d0,',',d1,',',length,')')
 	# TODO: get the appropriate algorithm in there, maybe use functools.partial
-
 	walk = wall_follower(length, d0, d1, forward, reverse)
 
-	#if len(walk) == 1:
-	#	return walk*4
-	#elif len(walk) == 2:
-	#	return [walk[0], walk[1], walk[1], walk[0]]
 	return walk
-	
+

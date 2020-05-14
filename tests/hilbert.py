@@ -12,6 +12,7 @@ def assert_equals(actual, expected):
 		assert False
 
 if __name__ == '__main__':
+	# simple forward mapping
 	assert_equals(forward(0,1), (0,0))
 
 	assert_equals(forward(0,4), (0,0))
@@ -36,13 +37,39 @@ if __name__ == '__main__':
 	assert_equals(forward(14,16), (2,0))
 	assert_equals(forward(15,16), (3,0))
 
+	# simple reverse mapping
+	assert_equals(reverse(0,0,1), 0)
+
+	assert_equals(reverse(0,0,4), 0)
+	assert_equals(reverse(0,1,4), 1)
+	assert_equals(reverse(1,1,4), 2)
+	assert_equals(reverse(1,0,4), 3)
+
+	assert_equals(reverse(0,0,16), 0)
+	assert_equals(reverse(1,0,16), 1)
+	assert_equals(reverse(1,1,16), 2)
+	assert_equals(reverse(0,1,16), 3)
+	assert_equals(reverse(0,2,16), 4)
+	assert_equals(reverse(0,3,16), 5)
+	assert_equals(reverse(1,3,16), 6)
+	assert_equals(reverse(1,2,16), 7)
+	assert_equals(reverse(2,2,16), 8)
+	assert_equals(reverse(2,3,16), 9)
+	assert_equals(reverse(3,3,16), 10)
+	assert_equals(reverse(3,2,16), 11)
+	assert_equals(reverse(3,1,16), 12)
+	assert_equals(reverse(2,1,16), 13)
+	assert_equals(reverse(2,0,16), 14)
+	assert_equals(reverse(3,0,16), 15)
+
+
 	print('mapping/unmapping random points')
 	for i in range(10000):
 		length = 4**random.randint(0,10)
 		d = random.randint(0, length-1)
 		(x,y) = forward(d, length)
 		d_check = reverse(x, y, length)
-		assert_equals(d, d_check)
+		assert_equals(d_check, d)
 
 	print('comparing algorithms')
 	for i in range(10000):

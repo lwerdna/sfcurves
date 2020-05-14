@@ -1,7 +1,12 @@
+import math
+
 # includes endpoints! [d0,d1]
 def wall_follower(length, d0, d1, mapping, imapping):
+	#print('wall_follower(',length,',',d0,',',d1,',...)')
+
+	width = int(math.sqrt(length))
 	def ok(x, y):
-		if x<0 or y<0: return False
+		if x<0 or y<0 or x>=width or y>=width: return False
 		d = imapping(x, y, length)
 		#print('is %d within %d,%d' % (d, d0, d1))
 		return d>=0 and d>=d0 and d<=d1
